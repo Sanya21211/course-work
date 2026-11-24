@@ -1,0 +1,18 @@
+@model LoginVm
+@{
+    ViewData["Title"] = "Вхід";
+}
+<h1>Вхід до системи</h1>
+<partial name="_Errors" />
+<form asp-action="Login" asp-route-returnUrl="@ViewData["ReturnUrl"]" method="post" class="form">
+    <div class="field">
+        <label asp-for="Login"></label>
+        <input asp-for="Login" autocomplete="username" maxlength="50" />
+    </div>
+    <div class="field">
+        <label asp-for="Password"></label>
+        <input asp-for="Password" autocomplete="current-password" maxlength="128" />
+    </div>
+    <button type="submit">Увійти</button>
+</form>
+<p>Немає облікового запису? <a asp-action="Register">Зареєструватися як клієнт</a></p>

@@ -1,0 +1,12 @@
+@if (!ViewData.ModelState.IsValid)
+{
+    <div class="alert err" role="alert">
+        <strong>Перевірте введені дані.</strong>
+        <ul>
+            @foreach (var error in ViewData.ModelState.Values.SelectMany(v => v.Errors))
+            {
+                <li>@(string.IsNullOrEmpty(error.ErrorMessage) ? "Некоректне значення." : error.ErrorMessage)</li>
+            }
+        </ul>
+    </div>
+}

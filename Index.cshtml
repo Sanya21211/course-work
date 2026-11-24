@@ -1,0 +1,72 @@
+@model RequestListVm
+@{
+    ViewData["Title"] = "Заявки";
+    var result = Model.Result;
+}
+<h1>Заявки</h1>
+
+<form method="get" asp-action="Index" class="filter" role="search">
+    <div class="field">
+        <label for="search">Пошук (номер, обладнання, несправність)</label>
+        <input id="search" name="search" value="@Model.Search" maxlength="100" />
+    </div>
+    <div class="field">
+        <label for="status">Стан</label>
+        <select id="status" name="status">
+            <option value="">Усі стани</option>
+            @foreach (var s in Enum.GetValues<RequestStatus>())
+            {
+                <option value="@s" selected="@(Model.Status == s)">@s.Title()</option>
+            }
+        </select>
+    </div>
+    <button type="submit">Знайти</button>
+</form>
+
+@if (result.TotalCount == 0)
+{
+    <p class="empty">Заявок за вибраними умовами немає.</p>
+}
+else
+{
+    <div class="table-wrap">
+        <table>
+            <caption>Таблиця заявок (знайдено: @result.TotalCount)</caption>
+            <thead>
+            <tr>
+                <th scope="col">Номер</th>
+                <th scope="col">Обладнання</th>
+                <th scope="col">Клієнт</th>
+                <th scope="col">Стан</th>
+                <th scope="col">Виконавець</th>
+                <th scope="col">Оновлено</th>
+            </tr>
+            </thead>
+            <tbody>
+            @foreach (var item in result.Items)
+            {
+                <tr>
+                    <td><a asp-action="Details" asp-route-id="@item.Id">@item.Number</a></td>
+                    <td>@item.EquipmentName</td>
+                    <td>@item.ClientName</td>
+                    <td><span class="badge st-@item.Status.ToString().ToLowerInvariant()">@item.Status.Title()</span></td>
+                    <td>@(item.TechnicianName ?? "—")</td>
+                    <td>@item.UpdatedAt.ToLocalTime().ToString("g")</td>
+                </tr>
+            }
+            </tbody>
+        </table>
+    </div>
+
+    <nav class="pager" aria-label="Сторінки списку">
+        @if (result.Page > 1)
+        {
+            <a asp-action="Index" asp-route-search="@Model.Search" asp-route-status="@Model.Status" asp-route-page="@(result.Page - 1)">← Попередня</a>
+        }
+        <span>Сторінка @result.Page з @result.TotalPages</span>
+        @if (result.Page < result.TotalPages)
+        {
+            <a asp-action="Index" asp-route-search="@Model.Search" asp-route-status="@Model.Status" asp-route-page="@(result.Page + 1)">Наступна →</a>
+        }
+    </nav>
+}

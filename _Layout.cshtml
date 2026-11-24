@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>@ViewData["Title"] — Сервісний центр</title>
+    <link rel="stylesheet" href="~/css/site.css" />
+</head>
+<body>
+<a class="skip" href="#main">Перейти до змісту</a>
+<header class="top">
+    <a class="brand" asp-controller="Requests" asp-action="Index">Сервісний центр</a>
+    <nav aria-label="Основна навігація">
+        @if (User.Identity?.IsAuthenticated == true)
+        {
+            <a asp-controller="Requests" asp-action="Index">Заявки</a>
+            @if (User.IsInRole("Client"))
+            {
+                <a asp-controller="Requests" asp-action="Create">Нове звернення</a>
+            }
+            <span class="who">@User.Identity!.Name</span>
+            <form asp-controller="Account" asp-action="Logout" method="post" class="inline">
+                <button type="submit" class="link">Вийти</button>
+            </form>
+        }
+        else
+        {
+            <a asp-controller="Account" asp-action="Login">Вхід</a>
+            <a asp-controller="Account" asp-action="Register">Реєстрація</a>
+        }
+    </nav>
+</header>
+<main id="main" tabindex="-1">
+    @if (TempData["Success"] is string ok)
+    {
+        <div class="alert ok" role="status"><strong>Успішно.</strong> @ok</div>
+    }
+    @if (TempData["Error"] is string err)
+    {
+        <div class="alert err" role="alert"><strong>Помилка.</strong> @err</div>
+    }
+    @RenderBody()
+</main>
+<footer>Навчальний проєкт. Усі дані синтетичні.</footer>
+</body>
+</html>

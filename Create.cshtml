@@ -1,0 +1,21 @@
+@model CreateRequestVm
+@{
+    ViewData["Title"] = "Нове звернення";
+}
+<h1>Нове звернення</h1>
+<partial name="_Errors" />
+<form asp-action="Create" method="post" class="form">
+    <div class="field">
+        <label asp-for="EquipmentName"></label>
+        <input asp-for="EquipmentName" maxlength="100" />
+    </div>
+    <div class="field">
+        <label asp-for="SerialNumber"></label>
+        <input asp-for="SerialNumber" maxlength="50" />
+    </div>
+    <div class="field">
+        <label asp-for="FaultDescription"></label>
+        <textarea asp-for="FaultDescription" rows="5" maxlength="2000"></textarea>
+    </div>
+    <button type="submit">Зареєструвати звернення</button>
+</form>

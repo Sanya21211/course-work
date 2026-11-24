@@ -1,0 +1,199 @@
+@model RequestDetailsVm
+@{
+    var d = Model.Details;
+    ViewData["Title"] = "Заявка " + d.Number;
+}
+<p><a asp-action="Index">← До списку заявок</a></p>
+<h1>Заявка @d.Number</h1>
+
+<section aria-labelledby="h-info">
+    <h2 id="h-info">Загальні відомості</h2>
+    <dl class="info">
+        <dt>Стан</dt>
+        <dd><span class="badge st-@d.Status.ToString().ToLowerInvariant()">@d.Status.Title()</span></dd>
+        <dt>Клієнт</dt>
+        <dd>@d.ClientName</dd>
+        <dt>Обладнання</dt>
+        <dd>@d.EquipmentName (с/н @d.SerialNumber)</dd>
+        <dt>Несправність</dt>
+        <dd>@d.FaultDescription</dd>
+        <dt>Виконавець</dt>
+        <dd>@(d.TechnicianName ?? "не призначено")</dd>
+        <dt>Діагностика</dt>
+        <dd>@(d.DiagnosisResult ?? "—")</dd>
+        <dt>Результат виконання</dt>
+        <dd>@(d.ExecutionResult ?? "—")</dd>
+        <dt>Оновлено</dt>
+        <dd>@d.UpdatedAt.ToLocalTime().ToString("g")</dd>
+    </dl>
+</section>
+
+<section aria-labelledby="h-works">
+    <h2 id="h-works">Перелік робіт</h2>
+    @if (d.Works.Count == 0)
+    {
+        <p class="empty">Роботи ще не запропоновано.</p>
+    }
+    else
+    {
+        <div class="table-wrap">
+            <table>
+                <caption>Таблиця робіт за заявкою @d.Number</caption>
+                <thead>
+                <tr>
+                    <th scope="col">Робота</th>
+                    <th scope="col">Вартість, грн</th>
+                    <th scope="col">Стан</th>
+                    @if (Model.CanWork)
+                    {
+                        <th scope="col">Дія</th>
+                    }
+                </tr>
+                </thead>
+                <tbody>
+                @foreach (var w in d.Works)
+                {
+                    <tr>
+                        <td>@w.Title</td>
+                        <td class="num">@w.Cost.ToString("N2")</td>
+                        <td>@w.Status.Title()</td>
+                        @if (Model.CanWork)
+                        {
+                            <td>
+                                @if (w.Status == WorkItemStatus.Approved)
+                                {
+                                    <form asp-action="WorkDone" method="post" class="inline">
+                                        <input type="hidden" name="id" value="@d.Id" />
+                                        <input type="hidden" name="workItemId" value="@w.Id" />
+                                        <input type="hidden" name="version" value="@d.Version" />
+                                        <button type="submit">Виконано</button>
+                                    </form>
+                                }
+                            </td>
+                        }
+                    </tr>
+                }
+                </tbody>
+                <tfoot>
+                <tr>
+                    <th scope="row">Разом за погодженими та виконаними</th>
+                    <td class="num">@d.ApprovedTotal.ToString("N2")</td>
+                    <td colspan="@(Model.CanWork ? 2 : 1)"></td>
+                </tr>
+                </tfoot>
+            </table>
+        </div>
+    }
+</section>
+
+@if (Model.CanAssign)
+{
+    <section aria-labelledby="h-assign">
+        <h2 id="h-assign">Призначення виконавця</h2>
+        <form asp-action="Assign" method="post" class="form">
+            <input type="hidden" name="id" value="@d.Id" />
+            <input type="hidden" name="version" value="@d.Version" />
+            <div class="field">
+                <label for="technicianId">Виконавець</label>
+                <select id="technicianId" name="technicianId" required>
+                    <option value="">— оберіть —</option>
+                    @foreach (var t in Model.Technicians)
+                    {
+                        <option value="@t.Id" selected="@(t.Id == d.TechnicianId)">@t.Name</option>
+                    }
+                </select>
+            </div>
+            <button type="submit">Призначити</button>
+        </form>
+    </section>
+}
+
+@if (Model.CanDiagnose)
+{
+    <section aria-labelledby="h-diag">
+        <h2 id="h-diag">Діагностика</h2>
+        <p><a class="button" asp-action="Diagnose" asp-route-id="@d.Id">Зафіксувати результати діагностики</a></p>
+    </section>
+}
+
+@if (Model.CanDecide)
+{
+    <section aria-labelledby="h-decide">
+        <h2 id="h-decide">Погодження робіт</h2>
+        <form asp-action="Decide" method="post" class="form">
+            <input type="hidden" name="id" value="@d.Id" />
+            <input type="hidden" name="version" value="@d.Version" />
+            <fieldset>
+                <legend>Позначте роботи, які ви погоджуєте</legend>
+                @foreach (var w in d.Works.Where(x => x.Status == WorkItemStatus.Proposed))
+                {
+                    <div class="check">
+                        <input type="checkbox" id="w@(w.Id)" name="approvedIds" value="@w.Id" />
+                        <label for="w@(w.Id)">@w.Title — @w.Cost.ToString("N2") грн</label>
+                    </div>
+                }
+            </fieldset>
+            <button type="submit">Погодити вибране</button>
+        </form>
+    </section>
+}
+
+@if (Model.CanWork)
+{
+    <section aria-labelledby="h-complete">
+        <h2 id="h-complete">Завершення заявки</h2>
+        <form asp-action="Complete" method="post" class="form">
+            <input type="hidden" name="id" value="@d.Id" />
+            <input type="hidden" name="version" value="@d.Version" />
+            <div class="field">
+                <label for="executionResult">Результат виконання</label>
+                <textarea id="executionResult" name="executionResult" rows="4" maxlength="2000" required></textarea>
+            </div>
+            <button type="submit">Завершити заявку</button>
+        </form>
+    </section>
+}
+
+@if (Model.CanCancel)
+{
+    <section aria-labelledby="h-cancel">
+        <h2 id="h-cancel">Скасування</h2>
+        <form asp-action="Cancel" method="post" class="form">
+            <input type="hidden" name="id" value="@d.Id" />
+            <input type="hidden" name="version" value="@d.Version" />
+            <div class="field">
+                <label for="reason">Причина скасування</label>
+                <input id="reason" name="reason" maxlength="500" required />
+            </div>
+            <button type="submit" class="danger">Скасувати заявку</button>
+        </form>
+    </section>
+}
+
+<section aria-labelledby="h-history">
+    <h2 id="h-history">Історія станів</h2>
+    <div class="table-wrap">
+        <table>
+            <caption>Таблиця історії станів заявки @d.Number</caption>
+            <thead>
+            <tr>
+                <th scope="col">Час</th>
+                <th scope="col">Автор</th>
+                <th scope="col">Перехід</th>
+                <th scope="col">Коментар</th>
+            </tr>
+            </thead>
+            <tbody>
+            @foreach (var e in d.Events)
+            {
+                <tr>
+                    <td>@e.OccurredAt.ToLocalTime().ToString("g")</td>
+                    <td>@e.AuthorName</td>
+                    <td>@(e.From is null ? "—" : e.From.Value.Title()) → @e.To.Title()</td>
+                    <td>@(e.Comment ?? "")</td>
+                </tr>
+            }
+            </tbody>
+        </table>
+    </div>
+</section>

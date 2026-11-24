@@ -1,0 +1,23 @@
+@model RegisterVm
+@{
+    ViewData["Title"] = "Реєстрація";
+}
+<h1>Реєстрація клієнта</h1>
+<partial name="_Errors" />
+<form asp-action="Register" method="post" class="form">
+    <div class="field">
+        <label asp-for="Login"></label>
+        <input asp-for="Login" autocomplete="username" maxlength="50" />
+        <small>Латинські літери, цифри та символи . _ -</small>
+    </div>
+    <div class="field">
+        <label asp-for="DisplayName"></label>
+        <input asp-for="DisplayName" autocomplete="name" maxlength="100" />
+    </div>
+    <div class="field">
+        <label asp-for="Password"></label>
+        <input asp-for="Password" autocomplete="new-password" maxlength="128" />
+        <small>Довга парольна фраза краща за складні комбінації символів.</small>
+    </div>
+    <button type="submit">Зареєструватися</button>
+</form>

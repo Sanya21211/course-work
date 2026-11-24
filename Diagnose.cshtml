@@ -1,0 +1,43 @@
+@model DiagnoseVm
+@{
+    ViewData["Title"] = "Діагностика " + Model.Number;
+}
+<h1>Діагностика заявки @Model.Number</h1>
+<partial name="_Errors" />
+<form asp-action="Diagnose" method="post" class="form">
+    <input type="hidden" asp-for="Id" />
+    <input type="hidden" asp-for="Version" />
+    <input type="hidden" asp-for="Number" />
+    <div class="field">
+        <label asp-for="Diagnosis"></label>
+        <textarea asp-for="Diagnosis" rows="4" maxlength="2000"></textarea>
+    </div>
+
+    <fieldset>
+        <legend>Запропонований перелік робіт (порожні рядки ігноруються)</legend>
+        <div class="table-wrap">
+            <table>
+                <caption>Таблиця запропонованих робіт</caption>
+                <thead>
+                <tr>
+                    <th scope="col">№</th>
+                    <th scope="col">Назва роботи</th>
+                    <th scope="col">Вартість, грн</th>
+                </tr>
+                </thead>
+                <tbody>
+                @for (var i = 0; i < Model.Works.Count; i++)
+                {
+                    <tr>
+                        <td>@(i + 1)</td>
+                        <td><input asp-for="Works[i].Title" maxlength="200" aria-label="Назва роботи @(i + 1)" /></td>
+                        <td><input asp-for="Works[i].Cost" inputmode="decimal" aria-label="Вартість роботи @(i + 1), грн" /></td>
+                    </tr>
+                }
+                </tbody>
+            </table>
+        </div>
+    </fieldset>
+    <button type="submit">Зберегти діагностику</button>
+    <a asp-action="Details" asp-route-id="@Model.Id">Скасувати</a>
+</form>
